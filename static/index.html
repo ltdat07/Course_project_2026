@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E2BMaster</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-card">
+          <div class="brand-mark">E</div>
+          <div>
+            <div class="brand-title">E2BMaster</div>
+            <div class="brand-subtitle" data-i18n="brand.subtitle">Платформа мониторинга безопасности</div>
+          </div>
+        </div>
+
+        <nav class="nav-menu" id="navMenu">
+          <button class="nav-link active" data-page="dashboard"><span class="nav-icon">◫</span><span data-i18n="nav.dashboard">Панель мониторинга</span></button>
+          <button class="nav-link" data-page="reports"><span class="nav-icon">▤</span><span data-i18n="nav.reports">Отчёты</span></button>
+          <button class="nav-link" data-page="serious"><span class="nav-icon">◆</span><span data-i18n="nav.serious">Серьёзные случаи</span></button>
+          <button class="nav-link" data-page="nonserious"><span class="nav-icon">○</span><span data-i18n="nav.nonserious">Несерьёзные случаи</span></button>
+          <button class="nav-link" data-page="settings"><span class="nav-icon">⚙</span><span data-i18n="nav.settings">Настройки</span></button>
+        </nav>
+
+        <section class="sidebar-card">
+          <div class="sidebar-card-label" data-i18n="sidebar.label">Мониторинг системы</div>
+          <div id="sidebarCaseCount" class="sidebar-card-value">0</div>
+          <p id="sidebarCaseSummary" class="sidebar-card-text">Загрузка реестра случаев...</p>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div class="topbar-copy">
+            <div class="topbar-label" id="pageEyebrow">Панель мониторинга</div>
+            <h1 id="pageTitle">Загрузка...</h1>
+          </div>
+          <div class="topbar-actions">
+            <input id="globalSearch" class="search-input" type="search" placeholder="Поиск по базе безопасности..." data-i18n-placeholder="search.global" />
+            <select id="languageSwitcher" class="select-input language-switcher" aria-label="Выбор языка">
+              <option value="ru">Русский</option>
+              <option value="en">English</option>
+            </select>
+            <button id="voiceControlBtn" class="ghost-btn" type="button" data-i18n="actions.voiceMode">Голосовой режим</button>
+            <button id="createCaseBtn" class="primary-btn" data-i18n="actions.createReport">Создать отчёт</button>
+            <button id="importXmlBtn" class="ghost-btn" data-i18n="actions.importXml">Импортировать XML</button>
+            <div id="userAvatar" class="user-avatar">PV</div>
+          </div>
+        </header>
+        <p id="globalVoiceStatus" class="global-voice-status">Голосовое управление выключено.</p>
+
+        <section class="page active" data-page="dashboard">
+          <div class="metrics-grid">
+            <article class="metric-card">
+              <span class="metric-label" data-i18n="dashboard.totalReports">ВСЕГО ОТЧЁТОВ</span>
+              <strong id="metricTotal" class="metric-value">0</strong>
+              <small id="metricTotalNote" class="metric-note">+0.0% к прошлому месяцу</small>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label" data-i18n="dashboard.seriousCases">СЕРЬЁЗНЫЕ СЛУЧАИ</span>
+              <strong id="metricSerious" class="metric-value">0</strong>
+              <small id="metricSeriousNote" class="metric-note">+0.0% к прошлому месяцу</small>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label" data-i18n="dashboard.expectedEvents">ОЖИДАЕМЫЕ СОБЫТИЯ</span>
+              <strong id="metricExpected" class="metric-value">0</strong>
+              <small id="metricExpectedNote" class="metric-note">+0.0% к прошлому месяцу</small>
+            </article>
+            <article class="metric-card">
+              <span class="metric-label" data-i18n="dashboard.ready">ГОТОВО К ПРОВЕРКЕ</span>
+              <strong id="metricReady" class="metric-value">0</strong>
+              <small id="metricReadyNote" class="metric-note">+0.0% к прошлому месяцу</small>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel panel-wide">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-label" data-i18n="dashboard.trendLabel">Динамика отчётности по месяцам</div>
+                  <h2 data-i18n="dashboard.trendTitle">Визуализация объёма поступающих сообщений по безопасности</h2>
+                </div>
+              </div>
+              <div id="trendChart" class="line-chart"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-label" data-i18n="dashboard.severityLabel">Распределение по серьёзности</div>
+                  <h2 data-i18n="dashboard.severityTitle">Структура зарегистрированных сообщений по безопасности</h2>
+                </div>
+              </div>
+              <div class="donut-layout">
+                <div id="donutChart" class="donut-chart" data-total="0"></div>
+                <div class="donut-legend">
+                  <div class="legend-row"><span class="legend-dot dot-primary"></span><span data-i18n="dashboard.legendSerious">Серьёзные</span><strong id="splitSerious">0</strong></div>
+                  <div class="legend-row"><span class="legend-dot dot-secondary"></span><span data-i18n="dashboard.legendNonSerious">Несерьёзные</span><strong id="splitNonSerious">0</strong></div>
+                  <div class="legend-row"><span class="legend-dot dot-soft"></span><span data-i18n="dashboard.legendReady">Проверенные</span><strong id="splitReady">0</strong></div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-header">
+                <div>
+                  <div class="panel-label" data-i18n="dashboard.reactionLabel">Категории реакций</div>
+                  <h2 data-i18n="dashboard.reactionTitle">Частота определённых типов событий</h2>
+                </div>
+              </div>
+              <div id="reactionChart" class="reaction-grid"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="page" data-page="reports">
+          <div class="section-toolbar page-actions-only">
+            <button id="openCreateFromReports" class="primary-btn" data-i18n="actions.createReport">Создать отчёт</button>
+          </div>
+          <section class="panel">
+            <div class="table-controls">
+              <div class="table-meta">
+                <span id="reportsFound">Найдено: 0 отчётов</span>
+                <span id="reportsHint">Поиск по Case ID или пациенту...</span>
+              </div>
+              <div class="toolbar-actions">
+                <input id="reportsSearch" class="table-search" type="search" placeholder="Поиск по Case ID или пациенту..." data-i18n-placeholder="search.reports" />
+                <select id="statusFilter" class="select-input">
+                  <option value="all">Все статусы</option>
+                  <option value="Проверено">Проверено</option>
+                  <option value="Требует доработки">Требует доработки</option>
+                  <option value="Не проверено">Черновик</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-i18n="table.caseId">Case ID</th>
+                    <th data-i18n="table.receivedDate">Дата получения</th>
+                    <th data-i18n="table.patient">Пациент</th>
+                    <th data-i18n="table.reactionMeddra">Реакция (MedDRA)</th>
+                    <th data-i18n="table.status">Статус</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="reportsTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span id="reportsFooterLeft">Показано 0-0 из 0</span>
+              <div class="pager-controls">
+                <button id="reportsPrevBtn" class="pager-btn" type="button" data-i18n="pager.prev">Назад</button>
+                <span id="reportsPageInfo" class="pager-info">Страница 1 из 1</span>
+                <button id="reportsNextBtn" class="pager-btn" type="button" data-i18n="pager.next">Вперёд</button>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="page" data-page="serious">
+          <div class="section-toolbar page-actions-only">
+            <span id="seriousAttention" class="badge badge-danger">Требуют внимания: 0</span>
+          </div>
+          <div class="metrics-grid serious-grid">
+            <article class="metric-card compact">
+              <span class="metric-label" data-i18n="serious.death">СМЕРТЬ</span>
+              <strong id="seriousFatal">0</strong>
+            </article>
+            <article class="metric-card compact">
+              <span class="metric-label" data-i18n="serious.lifeThreatening">УГРОЖАЕТ ЖИЗНИ</span>
+              <strong id="seriousLifeThreat">0</strong>
+            </article>
+            <article class="metric-card compact">
+              <span class="metric-label" data-i18n="serious.hospitalization">ГОСПИТАЛИЗАЦИЯ</span>
+              <strong id="seriousHospital">0</strong>
+            </article>
+            <article class="metric-card compact">
+              <span class="metric-label" data-i18n="serious.disability">ИНВАЛИДИЗАЦИЯ</span>
+              <strong id="seriousDisability">0</strong>
+            </article>
+          </div>
+          <section class="panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-i18n="table.caseId">Case ID</th>
+                    <th data-i18n="table.date">Дата</th>
+                    <th data-i18n="table.patient">Пациент</th>
+                    <th data-i18n="table.event">Событие</th>
+                    <th data-i18n="table.criterion">Критерий</th>
+                    <th data-i18n="table.causality">Причинно-следственная связь</th>
+                    <th data-i18n="table.status">Статус</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="seriousTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="page" data-page="nonserious">
+          <div class="metrics-grid nonserious-grid">
+            <article class="metric-card compact">
+              <span class="metric-label" data-i18n="nonserious.total">ВСЕГО</span>
+              <strong id="nonSeriousTotal">0</strong>
+            </article>
+            <article class="metric-card compact">
+              <span class="metric-label" data-i18n="nonserious.expected">ОЖИДАЕМЫЕ</span>
+              <strong id="nonSeriousExpected">0</strong>
+            </article>
+            <article class="metric-card compact">
+              <span class="metric-label" data-i18n="nonserious.signals">НОВЫЕ СИГНАЛЫ</span>
+              <strong id="nonSeriousSignals">0</strong>
+            </article>
+          </div>
+          <section class="panel">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-i18n="table.caseId">Case ID</th>
+                    <th data-i18n="table.patient">Пациент</th>
+                    <th data-i18n="table.symptom">Симптом</th>
+                    <th data-i18n="table.drug">Препарат</th>
+                    <th data-i18n="table.relationship">Связь</th>
+                    <th data-i18n="table.action">Действие</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="nonSeriousTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-footer">
+              <span id="nonSeriousFooterLeft">Показано 0-0 из 0 записей</span>
+              <div class="pager-controls">
+                <button id="nonSeriousPrevBtn" class="pager-btn" type="button" data-i18n="pager.prev">Назад</button>
+                <span id="nonSeriousPageInfo" class="pager-info">Страница 1 из 1</span>
+                <button id="nonSeriousNextBtn" class="pager-btn" type="button" data-i18n="pager.next">Вперёд</button>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="page" data-page="settings">
+          <div class="section-toolbar page-actions-only">
+            <button id="saveSettingsBtn" class="primary-btn" data-i18n="actions.saveChanges">Сохранить изменения</button>
+          </div>
+          <div class="settings-grid">
+            <section class="panel">
+              <div class="panel-label" data-i18n="settings.profile">Профиль</div>
+              <div class="form-grid">
+                <label class="field"><span data-i18n="settings.name">Имя</span><input id="settingsUserName" /></label>
+                <label class="field"><span data-i18n="settings.email">Email</span><input id="settingsEmail" /></label>
+                <label class="field"><span data-i18n="settings.role">Роль</span><input id="settingsRole" /></label>
+                <label class="field"><span data-i18n="settings.language">Язык</span><select id="settingsLanguage" class="select-input"><option value="ru">Русский</option><option value="en">English</option></select></label>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-label" data-i18n="settings.notifications">Уведомления</div>
+              <div class="toggle-list">
+                <label class="toggle-row"><input id="notifySerious" type="checkbox" checked /> <span data-i18n="settings.notifySerious">Серьёзные случаи (ICSR)</span></label>
+                <label class="toggle-row"><input id="notifyValidation" type="checkbox" checked /> <span data-i18n="settings.notifyValidation">Сигналы валидации E2B</span></label>
+                <label class="toggle-row"><input id="notifyWeekly" type="checkbox" /> <span data-i18n="settings.notifyWeekly">Еженедельная сводка панели мониторинга</span></label>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-label" data-i18n="settings.security">Безопасность</div>
+              <div class="security-box">
+                <button id="changePasswordBtn" class="ghost-btn" type="button" data-i18n="actions.changePassword">Сменить пароль</button>
+                <p data-i18n="settings.securityHint">Локальный демонстрационный режим хранит настройки профиля только в браузере.</p>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="editorDrawer" class="drawer hidden">
+      <div class="drawer-backdrop" data-close-drawer="true"></div>
+      <div id="drawerPanel" class="drawer-panel">
+        <header class="drawer-header">
+          <div>
+            <div class="panel-label" data-i18n="drawer.label">Рабочая область случая</div>
+            <h2 id="editorTitle">Новый случай</h2>
+            <p id="editorMeta" class="drawer-meta"></p>
+          </div>
+          <div class="toolbar-actions">
+            <button id="drawerValidateBtn" class="ghost-btn" type="button" data-i18n="actions.validate">Проверить</button>
+            <button id="drawerExportBtn" class="ghost-btn" type="button" data-i18n="actions.exportXml">Экспортировать XML</button>
+            <button id="drawerCloseBtn" class="ghost-btn" type="button" data-i18n="actions.close">Закрыть</button>
+          </div>
+        </header>
+
+        <section id="caseWorkspaceSummary" class="case-workspace-summary">
+          <div class="case-mode-banner">
+            <div>
+              <div class="panel-label" id="caseModeLabel">Тип обработки</div>
+              <strong id="caseModeValue">Несерьёзный случай</strong>
+            </div>
+            <p id="caseModeHint" class="case-mode-hint">Упрощённый сценарий с сокращённым набором обязательных действий.</p>
+          </div>
+          <div class="workspace-metrics">
+            <article class="workspace-metric">
+              <span class="panel-label">Стадия кейса</span>
+              <strong id="workspaceStageLabel">Черновик</strong>
+            </article>
+            <article class="workspace-metric">
+              <span class="panel-label">Полнота кейса</span>
+              <strong id="workspaceCompletionLabel">0%</strong>
+            </article>
+            <article class="workspace-metric">
+              <span class="panel-label">Требует действий</span>
+              <strong id="workspaceActionCount">0</strong>
+            </article>
+          </div>
+          <div id="workspaceStepper" class="workspace-stepper"></div>
+          <div id="sectionReadinessMap" class="section-readiness-map"></div>
+        </section>
+
+        <nav class="subtabs" id="editorTabs">
+          <button class="subtab active" data-editor-tab="report" type="button" data-i18n="drawer.report">Отчёт</button>
+          <button class="subtab" data-editor-tab="patient" type="button" data-i18n="drawer.patient">Пациент</button>
+          <button class="subtab" data-editor-tab="event" type="button" data-i18n="drawer.event">Событие</button>
+          <button class="subtab" data-editor-tab="narrative" type="button" data-i18n="drawer.narrative">Нарратив</button>
+          <button class="subtab" data-editor-tab="review" type="button" data-i18n="drawer.review">Проверка</button>
+        </nav>
+
+        <form id="editorForm" class="drawer-form">
+          <section class="editor-page active" data-editor-panel="report">
+            <div class="panel">
+              <div class="form-grid">
+                <label class="field"><span data-i18n="field.caseId">Case ID</span><input name="report.caseNumber" /></label>
+                <label class="field"><span data-i18n="field.receivedDate">Дата получения</span><input name="report.receivedDate" type="date" /></label>
+                <label class="field"><span data-i18n="field.title">Заголовок</span><input name="report.title" /></label>
+                <label class="field"><span data-i18n="field.reportType">Тип отчёта</span><input name="report.reportType" /></label>
+                <label class="field"><span data-i18n="field.primarySource">Первичный источник</span><input name="report.primarySource" /></label>
+                <label class="field"><span data-i18n="field.sender">Отправитель</span><input name="report.sender" /></label>
+                <label class="field"><span data-i18n="field.seriousness">Серьёзность</span><input name="report.seriousness" /></label>
+                <label class="field"><span data-i18n="field.dueDate">Крайний срок</span><input name="report.dueDate" type="date" /></label>
+              </div>
+            </div>
+          </section>
+
+          <section class="editor-page" data-editor-panel="patient">
+            <div class="panel">
+              <div class="form-grid">
+                <label class="field"><span data-i18n="field.patientId">ID пациента</span><input name="patient.patientId" /></label>
+                <label class="field"><span data-i18n="field.initials">Инициалы</span><input name="patient.initials" /></label>
+                <label class="field"><span data-i18n="field.age">Возраст</span><input name="patient.age" type="number" /></label>
+                <label class="field"><span data-i18n="field.sex">Пол</span><input name="patient.sex" /></label>
+                <label class="field"><span data-i18n="field.weight">Вес, кг</span><input name="patient.weightKg" type="number" step="0.1" /></label>
+              </div>
+              <label class="field"><span data-i18n="field.medicalHistory">Анамнез</span><textarea name="patient.medicalHistory" rows="5"></textarea></label>
+              <label class="field"><span data-i18n="field.drugHistory">Лекарственный анамнез</span><textarea name="patient.drugHistory" rows="4"></textarea></label>
+            </div>
+          </section>
+
+          <section class="editor-page" data-editor-panel="event">
+            <div class="panel">
+              <div class="form-grid">
+                <label class="field"><span data-i18n="field.drug">Препарат</span><input name="products.0.name" /></label>
+                <label class="field"><span data-i18n="field.role">Роль</span><input name="products.0.role" /></label>
+                <label class="field"><span data-i18n="field.dose">Доза</span><input name="products.0.dose" /></label>
+                <label class="field"><span data-i18n="field.route">Путь введения</span><input name="products.0.route" /></label>
+                <label class="field"><span data-i18n="field.therapyStart">Начало терапии</span><input name="products.0.startDate" type="date" /></label>
+                <label class="field"><span data-i18n="field.actionTaken">Предпринятое действие</span><input name="products.0.actionTaken" /></label>
+                <label class="field voice-combo"><span data-i18n="field.eventDescription">Описание события</span><div class="voice-inline"><input name="events.0.description" /><button type="button" class="voice-btn" data-voice-target="events.0.description" data-i18n="actions.voice">Голос</button></div></label>
+                <label class="field voice-combo"><span data-i18n="field.meddraPt">MedDRA PT</span><div class="voice-inline"><input name="events.0.meddraPt" /><button type="button" class="voice-btn" data-voice-target="events.0.meddraPt" data-i18n="actions.voice">Голос</button></div></label>
+                <label class="field"><span data-i18n="field.eventStart">Начало события</span><input name="events.0.startDate" type="date" /></label>
+                <label class="field"><span data-i18n="field.outcome">Исход</span><input name="events.0.outcome" /></label>
+                <label class="field"><span data-i18n="field.serious">Серьёзность события</span><input name="events.0.serious" /></label>
+                <label class="field"><span data-i18n="field.causality">Причинно-следственная связь</span><input name="events.0.causality" /></label>
+              </div>
+            </div>
+          </section>
+
+          <section class="editor-page" data-editor-panel="narrative">
+            <div class="panel">
+              <label class="field voice-combo"><span data-i18n="field.caseNarrative">Нарратив случая</span><div class="voice-stack"><textarea name="narrative.summary" rows="8"></textarea><button type="button" class="voice-btn" data-voice-target="narrative.summary" data-i18n="actions.voice">Голос</button></div></label>
+              <label class="field voice-combo"><span data-i18n="field.reviewerComment">Комментарий ревьюера</span><div class="voice-stack"><textarea name="narrative.reviewerComment" rows="5"></textarea><button type="button" class="voice-btn" data-voice-target="narrative.reviewerComment" data-i18n="actions.voice">Голос</button></div></label>
+              <p id="voiceStatus" class="voice-status">Проверка поддержки голосового ввода...</p>
+            </div>
+          </section>
+
+          <section class="editor-page" data-editor-panel="review">
+            <section class="panel checklist-panel">
+              <div class="panel-label">Что ещё нужно заполнить?</div>
+              <ul id="completionChecklist" class="issue-list checklist-list"></ul>
+            </section>
+            <div class="review-columns">
+              <section class="panel">
+                <div class="panel-label" data-i18n="review.blocking">Блокирующие замечания</div>
+                <ul id="blockingList" class="issue-list"></ul>
+              </section>
+              <section class="panel">
+                <div class="panel-label" data-i18n="review.warnings">Предупреждения</div>
+                <ul id="warningsList" class="issue-list"></ul>
+              </section>
+            </div>
+            <section class="panel">
+              <label class="field"><span data-i18n="review.nextAction">Следующее действие</span><textarea name="review.nextAction" rows="3" disabled></textarea></label>
+              <div class="review-summary">
+                <div><span data-i18n="review.blockingShort">Блокирующие</span><strong id="blockingCount">0</strong></div>
+                <div><span data-i18n="review.warningsShort">Предупреждения</span><strong id="warningCount">0</strong></div>
+                <div><span data-i18n="review.ready">Готово</span><strong id="readyState">Нет</strong></div>
+              </div>
+            </section>
+            <section class="panel timeline-panel">
+              <div class="panel-label">История работы по кейсу</div>
+              <ul id="caseTimeline" class="timeline-list"></ul>
+            </section>
+          </section>
+
+          <footer class="drawer-footer">
+            <button id="fillDemoBtn" class="ghost-btn" type="button" data-i18n="actions.fillDemo">Заполнить демо</button>
+            <button class="primary-btn" type="submit" data-i18n="actions.saveCase">Сохранить случай</button>
+          </footer>
+        </form>
+      </div>
+    </div>
+
+    <dialog id="xmlDialog">
+      <form method="dialog" class="dialog-form">
+        <div class="dialog-header">
+          <h3 data-i18n="xml.title">Импорт XML</h3>
+          <button class="ghost-btn" value="cancel" data-i18n="actions.close">Закрыть</button>
+        </div>
+        <label class="field">
+          <span data-i18n="xml.payload">XML случая</span>
+          <textarea id="xmlInput" rows="16" placeholder="Вставьте XML-пакет сюда" data-i18n-placeholder="xml.placeholder"></textarea>
+        </label>
+        <div class="toolbar-actions">
+          <button id="submitImportBtn" class="primary-btn" value="default" data-i18n="actions.import">Импортировать</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="passwordDialog">
+      <form method="dialog" class="dialog-form" id="passwordForm">
+        <div class="dialog-header">
+          <h3 data-i18n="password.title">Смена пароля</h3>
+          <button class="ghost-btn" value="cancel" data-i18n="actions.close">Закрыть</button>
+        </div>
+        <div class="form-grid">
+          <label class="field">
+            <span data-i18n="password.current">Текущий пароль</span>
+            <input id="currentPassword" type="password" />
+          </label>
+          <label class="field">
+            <span data-i18n="password.new">Новый пароль</span>
+            <input id="newPassword" type="password" />
+          </label>
+          <label class="field">
+            <span data-i18n="password.confirm">Подтвердите новый пароль</span>
+            <input id="confirmPassword" type="password" />
+          </label>
+        </div>
+        <p id="passwordHelp" class="voice-status">Изменения пароля сохраняются только в этом браузере в демонстрационном режиме.</p>
+        <div class="toolbar-actions">
+          <button id="savePasswordBtn" class="primary-btn" value="default" data-i18n="actions.savePassword">Сохранить пароль</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
